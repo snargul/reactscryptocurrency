@@ -1,7 +1,37 @@
-# Getting Started with Create React App
+# React Crypto Currency App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This is a simple web application React project using CoinCap API in order to list, filter and display details of currencies. This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Dependencies
+
+ - "@material-ui/core": "^4.11.3"
+ - "@devexpress/dx-react-chart": "^2.7.4"
+ - "@devexpress/dx-react-core": "^2.7.4"
+ - "d3-scale": "^3.2.3"
+ - "axios": "^0.21.1"
+ - "react-router-dom": "^5.2.0"
+ ## Features
+ 
+ Included:
+ 
+  - list actual price rates and exchange info of crypto currencies
+  
+  - filter by currency name or symbol
+  
+  - change exchange type as USD or EUR
+  
+  - refresh button
+  
+  - detail page for each currency
+  
+  - 7-day plot graph on detail page
+  
+  - React Router
+  
+  Not-included:
+  
+  - fancy styles
+  
 ## Available Scripts
 
 In the project directory, you can run:
