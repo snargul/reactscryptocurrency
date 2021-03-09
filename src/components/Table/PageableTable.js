@@ -8,6 +8,7 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TablePagination from '@material-ui/core/TablePagination';
 import TableRow from '@material-ui/core/TableRow';
+import {Button} from "@material-ui/core";
 const useStyles = makeStyles({
   root: {
     width: '100%',
@@ -54,8 +55,9 @@ export default function StickyHeadTable(props) {
                     const value = row[column.id];
                     if (column.onClick) {
                       return (
-                        <TableCell key={column.id} align={column.align} onClick={() => column.onClick(value)}>
-                          {column.id === 'id' ? "Details" : value}
+                        <TableCell key={column.id} align={column.align}>
+                          <Button variant="outlined" style={{height: '20px'}} onClick={() => column.onClick(value)}>
+                            {column.id === 'id' ? "Details" : value}</Button>
                         </TableCell>
                       );
                     } else {
