@@ -19,16 +19,14 @@ const useStyles = makeStyles({
 
 export default function StickyHeadTable(props) {
   const classes = useStyles();
-  const [page, setPage] = React.useState(0);
-  const [rowsPerPage, setRowsPerPage] = React.useState(10);
 
   const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+    props.setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(+event.target.value);
-    setPage(0);
+    props.setPage(0);
+    props.setSize(+event.target.value);
   };
 
   return (
@@ -49,7 +47,7 @@ export default function StickyHeadTable(props) {
             </TableRow>
           </TableHead>
           <TableBody>
-            {props.rows.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((row) => {
+            {props.rows.slice(0, props.size).map((row) => {
               return (
                 <TableRow hover role="checkbox" tabIndex={-1} key={row.code}>
                   {props.columns.map((column) => {
@@ -75,11 +73,11 @@ export default function StickyHeadTable(props) {
         </Table>
       </TableContainer>
       <TablePagination
-        rowsPerPageOptions={[10, 25]}
+        rowsPerPageOptions={[5, 10, 20, 50, 100]}
         component="div"
-        count={props.rows.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
+        count={props.total}
+        rowsPerPage={props.size}
+        page={props.page}
         onChangePage={handleChangePage}
         onChangeRowsPerPage={handleChangeRowsPerPage}
       />

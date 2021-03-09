@@ -106,7 +106,7 @@ class CurrencyDetails extends Component {
         <br/>
         <hr/>
         <Button variant="outlined" color="primary" style={{height: '56px'}} onClick={() => this.backToList()}>
-          Back To List</Button>
+          Back To Home</Button>
         <br/>
         <hr/>
         <Button disabled>{"Details of " + this.state.currency}</Button>

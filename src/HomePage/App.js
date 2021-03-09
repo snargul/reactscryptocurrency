@@ -5,6 +5,7 @@ import PageableTable from '../components/Table/PageableTable'
 import {Button} from "@material-ui/core";
 import TextField from '@material-ui/core/TextField';
 import {renderTwoDigit} from "../helper/helper";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 class App extends Component {
 
@@ -16,7 +17,14 @@ class App extends Component {
       exchangeType: 'USD',
       exchangeRate: 1,
       filter: '',
-      offset: 0
+      size: 10,
+      page: 2,
+      totalElementCount: undefined,
+      searchQueryHistory: undefined,
+      searchQueryName: '',
+      searchQuerySymbol: '',
+      nameOptions: [],
+      symbolOptions: []
     };
   }
 
@@ -31,7 +39,13 @@ class App extends Component {
     } else if (this.state.filter) {
       searchQuery = '&search=' + this.state.filter;
     }
-    axios.get('https://api.coincap.io/v2/assets?limit=100&offset=' + this.state.offset + searchQuery)
+
+    this.getTotalCount(searchQuery, 0);
+
+    let limit = this.state.size
+    let offset = this.state.size * this.state.page
+
+    axios.get('https://api.coincap.io/v2/assets?limit=' + limit + '&offset=' + offset + searchQuery)
       .then(res => {
         const cryptos = res.data;
         console.log(cryptos);
@@ -41,20 +55,39 @@ class App extends Component {
       });
   }
 
-  increaseOffset = () => {
-    this.setState({offset: this.state.offset + 1}, () => this.getCurrencyList());
+  getTotalCount = (searchQuery = '', offset) => {
+    if (!this.state.totalElementCount || this.state.searchQueryHistory !== searchQuery) {
+      let size = 2000;
+      axios.get('https://api.coincap.io/v2/assets?limit=' + size + '&offset=' + offset + searchQuery)
+        .then(res => {
+          const cryptos = res.data;
+          if (cryptos && cryptos.data && cryptos.data.length) {
+            let totalElementCount = cryptos.data.length;
+            if (totalElementCount < (size * (offset + 1))) {
+              this.setFilterOptions(cryptos.data);
+              this.setState({totalElementCount, searchQueryHistory: searchQuery});
+            } else {
+              this.getTotalCount(searchQuery, offset + 1);
+            }
+          }
+        });
+    }
   }
 
-  decreaseOffset = () => {
-    this.setState({offset: this.state.offset - 1}, () => this.getCurrencyList());
-  }
-
-  jumpToFirstList = () => {
-    this.setState({offset: 0}, () => this.getCurrencyList());
+  setFilterOptions = (data) => {
+    if (!this.state.totalElementCount && data.length > 0) {
+      let nameOptions = [];
+      let symbolOptions = [];
+      data.forEach(each => {
+        nameOptions.push(each.name);
+        symbolOptions.push(each.symbol);
+      });
+      this.setState({nameOptions, symbolOptions});
+    }
   }
 
   resetFilter = () => {
-    this.setState({filter: ''}, () => this.getCurrencyList());
+    this.setState({filter: '', page: 0}, () => this.getCurrencyList());
   }
 
   fetchAndSetEUR = () => {
@@ -76,7 +109,7 @@ class App extends Component {
   }
 
   fetchByFilter = (value) => {
-    this.getCurrencyList(value);
+    this.setState({searchQuery: value, page: 0}, () => this.getCurrencyList(value));
   };
 
   showDetail = (value) => {
@@ -134,23 +167,37 @@ class App extends Component {
           Filter</Button>
         <span>&nbsp;</span>
         <Button variant="outlined" color="primary" style={{height: '56px'}}
-                onClick={() => this.toggleExchangeType()}>{this.state.exchangeType}</Button>
+                onClick={() => this.toggleExchangeType()}>{"Change Rate: " + this.state.exchangeType}</Button>
         <br/>
         <hr/>
-        <PageableTable columns={columns} rows={this.state.cryptos} {...this.props}/>
-        <br/>
-        <Button disabled={this.state.offset === 0} variant="outlined" color="primary" style={{height: '56px'}}
-                onClick={() => this.jumpToFirstList()}>First</Button>
-        <span>&nbsp;</span>
-        <Button disabled={this.state.offset === 0} variant="outlined" color="primary" style={{height: '56px'}}
-                onClick={() => this.decreaseOffset()}>Prev 100</Button>
-        <span>&nbsp;</span>
-        <TextField disabled id="outlined-disabled2"
-                   label={"Range: " + (this.state.offset * 100) + " - " + ((this.state.offset * 100) + 100)}
-                   variant="outlined" style={{width: '8.5%', textAlign: 'center'}}/>
-        <span>&nbsp;</span>
-        <Button variant="outlined" color="primary" style={{height: '56px'}} onClick={() => this.increaseOffset()}>Next
-          100</Button>
+            <Autocomplete
+              id="combo-box-demo"
+              value={this.state.searchQueryName}
+              onChange={(event, newValue) => {
+                this.setState({searchQueryName: newValue, page: 0, searchQuerySymbol: ''}, () => this.getCurrencyList(newValue));
+              }}
+              options={this.state.nameOptions}
+              getOptionLabel={(option) => option}
+              style={{width: 300, position: 'absolute', right: '28.5rem'}}
+              renderInput={(params) => <TextField {...params} label="Filter by Name" variant="outlined"/>}
+            />
+            <Autocomplete
+              id="combo-box-demo"
+              value={this.state.searchQuerySymbol}
+              onChange={(event, newValue) => {
+                  this.setState({searchQuerySymbol: newValue, page: 0, searchQueryName: ''}, () => this.getCurrencyList(newValue));
+              }}
+              options={this.state.symbolOptions}
+              getOptionLabel={(option) => option}
+              style={{width: 300, position: 'relative', left: '28.5rem'}}
+              renderInput={(params) => <TextField {...params} label="Filter by Symbol" variant="outlined"/>}
+            />
+        <hr/>
+        <PageableTable columns={columns} rows={this.state.cryptos}
+                       page={this.state.page} size={this.state.size} total={this.state.totalElementCount}
+                       setPage={(e) => this.setState({page: e}, () => this.getCurrencyList())}
+                       setSize={(e) => this.setState({size: e}, () => this.getCurrencyList())}
+                       {...this.props}/>
       </div>
     );
   }
